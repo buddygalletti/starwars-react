@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' />
+  </head>
+  <body>
+    <div id='root' class='container'/>
+    <script type='text/babel'>
+      const root = document.querySelector('#root');
+      class App extends React.Component{
+        constructor(){
+          super();
+          this.state = {
+            people: [],
+            selected: ''
+          };
+        }
+        componentDidMount(){
+          window.addEventListener('hashchange', ()=> {
+            this.setState({selected: window.location.hash.length > 1 ? window.location.hash.slice(1)*1 : ''});
+          });
+          if(window.location.hash.slice(1).length){
+            this.setState({selected: window.location.hash.slice(1)*1});
+          }
+          fetch('https://swapi.co/api/people')
+            .then( response => response.json())
+            .then( data => this.setState({ people: data.results }));
+        }
+        render(){
+          const { people, selected } = this.state;
+          return (
+            <div>
+              <h1>Star Wars - React Style</h1>
+              <div style={{ display: 'flex'}}>
+                <ul className='nav nav-pills flex-column' style={{ flex: 1}}>
+                  {
+                    people.map( (person, idx) => (
+                      <li key={ person.name } className='nav-item'>
+                        <a href={`#${ idx }`} className={`nav-link${selected === idx ? ' active': ''}`}>
+                        {
+                          person.name
+                        }
+                        </a>
+                      </li>
+                    ))
+                  }
+                </ul>
+                {
+                  !!people[selected] && (
+                    <div style={{ flex: 1, marginLeft: '10px'}}>
+                      <a href='#'>Hide Details</a>
+                      <h2>Details for { people[selected].name }</h2>
+                      <ul className='list-group'>
+                      {
+                        ['name', 'hair', 'hair_color', 'height', 'eye_color', 'birth_year', 'homeworld'].map( key => (
+                          <li key={ key } className='list-group-item'>
+                            <strong>{ key }</strong> { people[selected][key] }
+                          </li>
+                        ))
+                      }
+                      </ul>
+                    </div>
+                  )
+
+                }
+              </div>
+            </div>
+          );
+        }
+      }
+      ReactDOM.render(<App />, root);
+    </script>
+  </body>
+</html>
